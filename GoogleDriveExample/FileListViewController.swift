@@ -13,8 +13,11 @@ class FileListViewController: UIViewController {
     
     weak var helper: GDHelper?
     var currentDepth: String?
-    private var files: [FileObject] = []
 
+    private var files: [FileObject] = []
+    private var nextPageToken: String?
+    
+    private var isFetching = false
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -28,7 +31,8 @@ class FileListViewController: UIViewController {
     }
     
     private func fetchFileList() {
-        helper?.fetchFileList(in: currentDepth ?? "root") { [weak self] fileList, error in
+        isFetching = true
+        helper?.fetchFileList(in: currentDepth) { [weak self] pageToken, fileList, error in
             guard let self = self else { return }
             
             if let error = error {
@@ -41,23 +45,39 @@ class FileListViewController: UIViewController {
                 return
             }
             
-            self.files = fileList.map {
-                var fileObject = FileObject()
-                fileObject.id = $0.identifier ?? ""
-                fileObject.name = $0.name ?? ""
-                if $0.mimeType == "application/vnd.google-apps.folder" {
-                    fileObject.mimeType = .folder
-                } else {
-                    fileObject.mimeType = .file
-                }
-                return fileObject
-            }.sorted {
-                if $0.mimeType != $1.mimeType {
-                    return $0.mimeType == .folder
-                }
-                return $0.name < $1.name
-            }
+            self.nextPageToken = pageToken
+            self.files = FileObject.makeFiles(fileList)
             self.updateUI()
+            self.isFetching = false
+        }
+    }
+    
+    private func fetchMorePage() {
+        guard isFetching == false else {
+            return
+        }
+        guard nextPageToken != nil else {
+            return
+        }
+        
+        isFetching = true
+        helper?.fetchFileList(in: currentDepth, usingToken: nextPageToken) { [weak self] pageToken, fileList, error in
+            guard let self = self else { return }
+            
+            if let error = error {
+                print("파일리스트 받아오는 중 에러 발생=\(error)")
+                return
+            }
+            
+            guard let fileList = fileList else {
+                print("파일리스트 받은 게 없음")
+                return
+            }
+            
+            self.nextPageToken = pageToken
+            self.files.append(contentsOf: FileObject.makeFiles(fileList))
+            self.updateUI()
+            self.isFetching = false
         }
     }
 }
@@ -71,12 +91,22 @@ extension FileListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
         let file = files[indexPath.item]
+                
+        var content = UIListContentConfiguration.subtitleCell()
+        content.text = file.name
+        content.textProperties.numberOfLines = 1
+        content.textProperties.lineBreakMode = .byTruncatingTail
         
-        var configuration = UIListContentConfiguration.cell()
-        configuration.text = file.name
-        configuration.image = file.mimeType == .folder ? UIImage(systemName: "folder") : UIImage(systemName: "f.square")
+        if file.mimeType == .folder {
+            content.image = UIImage(systemName: "folder")
+        } else {
+            content.image = UIImage(systemName: "f.square")
+            let formatter = ByteCountFormatter()
+            formatter.countStyle = .binary
+            content.secondaryText = formatter.string(fromByteCount: file.size)
+        }
         
-        cell.contentConfiguration = configuration
+        cell.contentConfiguration = content
         return cell
     }
 }
@@ -91,10 +121,18 @@ extension FileListViewController: UITableViewDelegate {
                 navigationController?.pushViewController(vc, animated: true)
             }
         } else {
-            print("파일 다운로드 로직 수행해야함")
+            print("파일 다운로드 로직 수행해야함. 사이즈=\(file.size)")
         }
         
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+extension FileListViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if (scrollView.contentOffset.y + scrollView.frame.height) > scrollView.contentSize.height {
+            fetchMorePage()
+        }
     }
 }
 

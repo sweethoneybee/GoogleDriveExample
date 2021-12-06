@@ -12,28 +12,32 @@ final class GDHelper {
     init(authorizer: GTMFetcherAuthorizationProtocol) {
         service = GTLRDriveService()
         service.authorizer = authorizer
-        service.shouldFetchNextPages = true
         service.isRetryEnabled = true
     }
     
     var service: GTLRDriveService
     var fileListTicket: GTLRServiceTicket?
     
-    func fetchFileList(in root: String, onCompleted: (([GTLRDrive_File]?, Error?)->Void)? = nil) {
+    /// refer to https://developers.google.com/drive/api/v3/reference/files
+    func fetchFileList(in root: String?,
+                       usingToken nextPageToken: String? = nil,
+                       onCompleted: ((String?, [GTLRDrive_File]?, Error?)->Void)? = nil) {
         let query = GTLRDriveQuery_FilesList.query()
-        query.fields = "kind,nextPageToken,files(mimeType,id,kind,name,webViewLink,thumbnailLink,trashed)"
-        query.pageSize = 100
-        query.q = "(mimeType = 'application/vnd.google-apps.folder' or mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') and '\(root)' in parents and trashed = false"
+        query.fields = "nextPageToken,files(mimeType,id,name,size)"
+        query.q = "(mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType = 'application/vnd.google-apps.folder' or mimeType = 'application/pdf') and '\(root ?? "root")' in parents and trashed = false"
+        query.pageSize = 10
+        query.pageToken = nextPageToken
+        query.orderBy = "folder, name"
+        
         fileListTicket = service.executeQuery(query) { ticket, result, error in
             if let error = error {
                 print("파일리스트에러=\(error)")
-                onCompleted?(nil, error)
+                onCompleted?(nil, nil, error)
                 return
             }
             
             let fileList = result as? GTLRDrive_FileList
-            print(fileList?.nextPageToken)
-            onCompleted?(fileList?.files, nil)
+            onCompleted?(fileList?.nextPageToken, fileList?.files, nil)
             
         }
     }
