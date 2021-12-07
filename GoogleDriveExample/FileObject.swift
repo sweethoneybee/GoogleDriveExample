@@ -13,23 +13,21 @@ struct FileObject {
         case file
     }
     
-    var id: String = ""
-    var name: String = ""
-    var size: Int64 = .zero
-    var mimeType: MimeType = .file
+    var id: String
+    var index: Int
+    var name: String
+    var size: Int64
+    var mimeType: MimeType
     
     static func makeFiles(_ fileList: [GTLRDrive_File]) -> [Self] {
-        return fileList.map {
-            var fileObject = FileObject()
-            fileObject.id = $0.identifier ?? ""
-            fileObject.name = $0.name ?? ""
-            fileObject.size = $0.size?.int64Value ?? 20
-            if $0.mimeType == "application/vnd.google-apps.folder" {
-                fileObject.mimeType = .folder
-            } else {
-                fileObject.mimeType = .file
-            }
-            return fileObject
+        return fileList.enumerated().map {
+            return FileObject(
+                id: $1.identifier ?? "",
+                index: $0,
+                name: $1.name ?? "",
+                size: $1.size?.int64Value ?? 0,
+                mimeType: ($0.mimeType == "application/vnd.google-apps.folder") ? .folder : .file
+            )
         }
     }
 }

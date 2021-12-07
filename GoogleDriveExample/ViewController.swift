@@ -14,10 +14,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var usernameLabel: UILabel!
     @IBOutlet weak var signInButton: UIButton!
     
-    var helper: GDHelper?
-    
     var signedInUsername: String? {
-        if let auth = self.helper?.service.authorizer {
+        if let auth = GDHelper.shared.authorizer {
             if case true? = auth.canAuthorize {
                 return auth.userEmail
             } else {
@@ -32,7 +30,7 @@ class ViewController: UIViewController {
         
         GIDSignIn.sharedInstance.restorePreviousSignIn { user, error in
             if let authorizer = GIDSignIn.sharedInstance.currentUser?.authentication.fetcherAuthorizer() {
-                self.helper = GDHelper(authorizer: authorizer)
+                GDHelper.shared.authorizer = authorizer
                 self.updateUI()
             }
         }
@@ -56,14 +54,13 @@ class ViewController: UIViewController {
             }
 
             print("성공!")
-            self.helper = GDHelper(authorizer: user.authentication.fetcherAuthorizer())
+            GDHelper.shared.authorizer = user.authentication.fetcherAuthorizer()
             self.updateUI()
         }
     }
     
     @IBAction func printFileLists(_ sender: Any) {
         if let vc = self.storyboard?.instantiateViewController(withIdentifier: "FileListViewController") as? FileListViewController {
-            vc.helper = self.helper
             vc.currentDepth = "root"
             navigationController?.pushViewController(vc, animated: true)
         }

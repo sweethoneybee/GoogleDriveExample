@@ -8,15 +8,37 @@
 import Foundation
 import CoreXLSX
 
+protocol GDHelperDownloadDelegate: AnyObject {
+    func didFinishDownload(_ fileObject:FileObject, error: Error?)
+}
+
 final class GDHelper {
-    init(authorizer: GTMFetcherAuthorizationProtocol) {
+    init() {
         service = GTLRDriveService()
-        service.authorizer = authorizer
         service.isRetryEnabled = true
     }
+
+    static let shared = GDHelper()
+    weak var delegate: GDHelperDownloadDelegate?
     
+    var activeDownloads: [String: GTLRServiceTicket] = [:] // [GTLRDrive_File.id : GTLRServiceTicket
     var service: GTLRDriveService
     var fileListTicket: GTLRServiceTicket?
+    
+    var authorizer: GTMFetcherAuthorizationProtocol? {
+        get {
+            return service.authorizer
+        }
+        set {
+            service.authorizer = newValue
+        }
+    }
+    
+    let drivePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("googleDrive", isDirectory: true)
+
+    func localPath(for id: String) -> URL {
+        return drivePath.appendingPathComponent(id)
+    }
     
     /// refer to https://developers.google.com/drive/api/v3/reference/files
     func fetchFileList(in root: String?,
@@ -38,20 +60,22 @@ final class GDHelper {
             
             let fileList = result as? GTLRDrive_FileList
             onCompleted?(fileList?.nextPageToken, fileList?.files, nil)
-            
         }
     }
     
-    func downloadFile(_ file: GTLRDrive_File, toDestinationURL destinationURL: URL) {
-        guard let id = file.identifier else {
-            print("다운로드 전에 바인딩실패")
-            return
-        }
+    func downloadFile(from fileObject: FileObject) {
+        guard activeDownloads[fileObject.id] == nil else { return }
+        let id = fileObject.id
         let query = GTLRDriveQuery_FilesGet.queryForMedia(withFileId: id)
         
-        service.executeQuery(query) { ticket, object, error in
+        activeDownloads[id] = service.executeQuery(query) { ticket, object, error in
+            defer {
+                self.activeDownloads.removeValue(forKey: id)
+            }
+            
             if let error = error {
                 print("다운로드에러=\(error)")
+                self.delegate?.didFinishDownload(fileObject, error: error)
                 return
             }
             
@@ -59,36 +83,54 @@ final class GDHelper {
                 return
             }
             
-            var rows: [[String]] = []
             do {
-                let xlsxFile = try XLSXFile(data: data)
-                
-                for wbk in try xlsxFile.parseWorkbooks() {
-                    for (name, path) in try xlsxFile.parseWorksheetPathsAndNames(workbook: wbk) {
-                        if let worksheetName = name {
-                            print("워크시트이름=\(worksheetName)")
-                        }
-                        
-                        let worksheet = try xlsxFile.parseWorksheet(at: path)
-                        if let sharedStrings = try xlsxFile.parseSharedStrings() {
-                            for row in worksheet.data?.rows ?? [] {
-                                let rowCStrings = row.cells.compactMap { $0.stringValue(sharedStrings) }
-                                rows.append(rowCStrings)
-                            }
-                        }
-                        
-                    }
-                }
+                let destinationURL = self.localPath(for: id)
+                try data.write(to: destinationURL)
+                self.delegate?.didFinishDownload(fileObject, error: nil)
             } catch {
-                print("셀 탐색 실패")
+                print("다운로드 후 데이터 쓰기 실패")
+                self.delegate?.didFinishDownload(fileObject, error: error)
             }
+        }
+    }
+    
+    func cancelDownload(for id: String) {
+        if let ticket = activeDownloads[id] {
+            ticket.cancel()
+            activeDownloads.removeValue(forKey: id)
+        }
+    }
+    
+    func readWorkSheet(from data: Data) {
+        var rows: [[String]] = []
+        do {
+            let xlsxFile = try XLSXFile(data: data)
             
-            rows.forEach {
-                $0.forEach {
-                    print($0, terminator: "")
+            for wbk in try xlsxFile.parseWorkbooks() {
+                for (name, path) in try xlsxFile.parseWorksheetPathsAndNames(workbook: wbk) {
+                    if let worksheetName = name {
+                        print("워크시트이름=\(worksheetName)")
+                    }
+                    
+                    let worksheet = try xlsxFile.parseWorksheet(at: path)
+                    if let sharedStrings = try xlsxFile.parseSharedStrings() {
+                        for row in worksheet.data?.rows ?? [] {
+                            let rowCStrings = row.cells.compactMap { $0.stringValue(sharedStrings) }
+                            rows.append(rowCStrings)
+                        }
+                    }
+                    
                 }
-                print("")
             }
+        } catch {
+            print("셀 탐색 실패")
+        }
+        
+        rows.forEach {
+            $0.forEach {
+                print($0, terminator: "")
+            }
+            print("")
         }
     }
 }

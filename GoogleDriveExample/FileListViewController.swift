@@ -11,7 +11,6 @@ class FileListViewController: UIViewController {
 
     @IBOutlet weak var tableView: UITableView!
     
-    weak var helper: GDHelper?
     var currentDepth: String?
 
     private var files: [FileObject] = []
@@ -21,6 +20,7 @@ class FileListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        GDHelper.shared.delegate = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
         
         fetchFileList()
@@ -30,9 +30,13 @@ class FileListViewController: UIViewController {
         tableView.reloadData()
     }
     
+    func reload(_ index: Int) {
+        tableView.reloadRows(at: [IndexPath(row: index, section: 0)], with: .none)
+    }
+    
     private func fetchFileList() {
         isFetching = true
-        helper?.fetchFileList(in: currentDepth) { [weak self] pageToken, fileList, error in
+        GDHelper.shared.fetchFileList(in: currentDepth) { [weak self] pageToken, fileList, error in
             guard let self = self else { return }
             
             if let error = error {
@@ -52,7 +56,7 @@ class FileListViewController: UIViewController {
         }
     }
     
-    private func fetchMorePage() {
+    private func fetchFileList(using nextPageToken: String?) {
         guard isFetching == false else {
             return
         }
@@ -61,7 +65,7 @@ class FileListViewController: UIViewController {
         }
         
         isFetching = true
-        helper?.fetchFileList(in: currentDepth, usingToken: nextPageToken) { [weak self] pageToken, fileList, error in
+        GDHelper.shared.fetchFileList(in: currentDepth, usingToken: nextPageToken) { [weak self] pageToken, fileList, error in
             guard let self = self else { return }
             
             if let error = error {
@@ -82,6 +86,31 @@ class FileListViewController: UIViewController {
     }
 }
 
+// MARK: - UI Delegate
+extension FileListViewController { // TODO: Adopt cell delegate
+    func downloadButtonTapped(_ cell: UITableViewCell) {
+        if let indexPath = tableView.indexPath(for: cell) {
+            let file = files[indexPath.item]
+            GDHelper.shared.downloadFile(from: file)
+            reload(indexPath.item)
+        }
+    }
+    
+    func makeBreadButtonTapped(_ cell: UITableViewCell) {
+        if let indexPath = tableView.indexPath(for: cell) {
+            let file = files[indexPath.item]
+            // xlsx 파일 읽는 객체가 로직을 수행함.
+        }
+    }
+    
+    func cancelButtonTapped(_ cell: UITableViewCell) {
+        if let indexPath = tableView.indexPath(for: cell) {
+            let file = files[indexPath.item]
+            GDHelper.shared.cancelDownload(for: file.id)
+            reload(indexPath.item)
+        }
+    }
+}
 
 extension FileListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -116,7 +145,6 @@ extension FileListViewController: UITableViewDelegate {
         let file = files[indexPath.item]
         if file.mimeType == .folder {
             if let vc = self.storyboard?.instantiateViewController(withIdentifier: "FileListViewController") as? FileListViewController {
-                vc.helper = self.helper
                 vc.currentDepth = file.id
                 navigationController?.pushViewController(vc, animated: true)
             }
@@ -131,8 +159,21 @@ extension FileListViewController: UITableViewDelegate {
 extension FileListViewController: UIScrollViewDelegate {
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         if (scrollView.contentOffset.y + scrollView.frame.height) > scrollView.contentSize.height {
-            fetchMorePage()
+            fetchFileList(using: nextPageToken)
         }
     }
 }
 
+extension FileListViewController: GDHelperDownloadDelegate {
+    func didFinishDownload(_ fileObject: FileObject, error: Error?) {
+        guard fileObject.index < files.count else { return }
+        
+        let file = files[fileObject.index]
+        if file.id == fileObject.id {
+            if let error = error{
+                print("다운로드 실패 에러처리=\(error)")
+            }
+            reload(fileObject.index)
+        }
+    }
+}
