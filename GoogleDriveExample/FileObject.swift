@@ -19,14 +19,14 @@ struct FileObject {
     var size: Int64
     var mimeType: MimeType
     
-    static func makeFiles(_ fileList: [GTLRDrive_File]) -> [Self] {
+    static func makeFiles(_ fileList: [GTLRDrive_File], startIndex: Int = 0) -> [Self] {
         return fileList.enumerated().map {
             return FileObject(
                 id: $1.identifier ?? "",
-                index: $0,
+                index: $0 + startIndex,
                 name: $1.name ?? "",
                 size: $1.size?.int64Value ?? 0,
-                mimeType: ($0.mimeType == "application/vnd.google-apps.folder") ? .folder : .file
+                mimeType: ($1.mimeType == "application/vnd.google-apps.folder") ? .folder : .file
             )
         }
     }

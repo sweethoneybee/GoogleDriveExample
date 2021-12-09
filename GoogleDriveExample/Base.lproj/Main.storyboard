@@ -68,13 +68,68 @@
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                 <prototypes>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="Cell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" id="OMq-JW-t3k">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" restorationIdentifier="DownloadListCell" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="DownloadListCell" id="OMq-JW-t3k" customClass="DownloadListCell" customModule="GoogleDriveExample" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="44.5" width="374" height="43.5"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="OMq-JW-t3k" id="ev3-Hf-wDB">
                                             <rect key="frame" x="0.0" y="0.0" width="374" height="43.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ze4-zT-9AP">
+                                                    <rect key="frame" x="7" y="6" width="30" height="30"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="height" constant="30" id="bxu-6M-T7P"/>
+                                                        <constraint firstAttribute="width" constant="30" id="hvJ-2M-vrJ"/>
+                                                    </constraints>
+                                                </imageView>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="타이틀" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yE2-c4-7mn">
+                                                    <rect key="frame" x="45" y="6" width="261" height="21"/>
+                                                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="서브타이틀" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Nsk-CK-csJ">
+                                                    <rect key="frame" x="45" y="25" width="48" height="14"/>
+                                                    <fontDescription key="fontDescription" style="UICTFontTextStyleCaption1"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="QXg-tX-flb">
+                                                    <rect key="frame" x="296.5" y="6" width="70.5" height="30"/>
+                                                    <state key="normal" title="Button"/>
+                                                    <buttonConfiguration key="configuration" style="plain" title="다운"/>
+                                                </button>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rHX-Wl-3lO">
+                                                    <rect key="frame" x="296.5" y="6" width="70.5" height="30"/>
+                                                    <state key="normal" title="Button"/>
+                                                    <buttonConfiguration key="configuration" style="plain" title="열기"/>
+                                                </button>
+                                            </subviews>
+                                            <constraints>
+                                                <constraint firstAttribute="bottom" secondItem="Nsk-CK-csJ" secondAttribute="bottom" constant="4.5" id="9Pw-fk-gJn"/>
+                                                <constraint firstItem="ze4-zT-9AP" firstAttribute="leading" secondItem="ev3-Hf-wDB" secondAttribute="leading" constant="7" id="APl-Ur-j8E"/>
+                                                <constraint firstItem="yE2-c4-7mn" firstAttribute="leading" secondItem="ze4-zT-9AP" secondAttribute="trailing" constant="8" symbolic="YES" id="IAs-SY-lNS"/>
+                                                <constraint firstItem="rHX-Wl-3lO" firstAttribute="leading" secondItem="yE2-c4-7mn" secondAttribute="trailing" constant="-9.5" id="Nll-TI-jZb"/>
+                                                <constraint firstItem="QXg-tX-flb" firstAttribute="leading" secondItem="yE2-c4-7mn" secondAttribute="trailing" constant="-9.5" id="QdC-Cc-D02"/>
+                                                <constraint firstItem="Nsk-CK-csJ" firstAttribute="top" secondItem="yE2-c4-7mn" secondAttribute="bottom" constant="-2" id="RFr-xS-TMb"/>
+                                                <constraint firstItem="ze4-zT-9AP" firstAttribute="top" secondItem="ev3-Hf-wDB" secondAttribute="top" constant="6" id="Twl-OT-EZ0"/>
+                                                <constraint firstItem="Nsk-CK-csJ" firstAttribute="leading" secondItem="yE2-c4-7mn" secondAttribute="leading" id="UV5-PY-1RT"/>
+                                                <constraint firstItem="QXg-tX-flb" firstAttribute="bottom" secondItem="ze4-zT-9AP" secondAttribute="bottom" id="Waf-XI-gHY"/>
+                                                <constraint firstItem="rHX-Wl-3lO" firstAttribute="top" secondItem="ze4-zT-9AP" secondAttribute="top" id="ftJ-4B-Fc6"/>
+                                                <constraint firstAttribute="trailing" secondItem="QXg-tX-flb" secondAttribute="trailing" constant="7" id="osz-jN-jF9"/>
+                                                <constraint firstItem="Nsk-CK-csJ" firstAttribute="trailing" secondItem="yE2-c4-7mn" secondAttribute="trailing" constant="-213" id="r3A-k1-wjv"/>
+                                                <constraint firstItem="QXg-tX-flb" firstAttribute="top" secondItem="ze4-zT-9AP" secondAttribute="top" id="vns-SI-Oh3"/>
+                                                <constraint firstItem="rHX-Wl-3lO" firstAttribute="bottom" secondItem="ze4-zT-9AP" secondAttribute="bottom" id="zIS-P6-q0y"/>
+                                                <constraint firstAttribute="trailing" secondItem="rHX-Wl-3lO" secondAttribute="trailing" constant="7" id="zXd-Yr-A3c"/>
+                                            </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <outlet property="downloadButton" destination="QXg-tX-flb" id="Gzp-l4-Afi"/>
+                                            <outlet property="iconView" destination="ze4-zT-9AP" id="6Ui-VH-SfQ"/>
+                                            <outlet property="openButton" destination="rHX-Wl-3lO" id="E63-9X-GtC"/>
+                                            <outlet property="subTitle" destination="Nsk-CK-csJ" id="Rnk-JA-qnk"/>
+                                            <outlet property="title" destination="yE2-c4-7mn" id="di7-IT-zod"/>
+                                        </connections>
                                     </tableViewCell>
                                 </prototypes>
                                 <connections>

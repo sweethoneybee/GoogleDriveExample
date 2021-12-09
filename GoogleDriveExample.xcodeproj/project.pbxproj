@@ -19,6 +19,7 @@
 		40DD737B275CB8EE001B85E6 /* FileObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DD737A275CB8EE001B85E6 /* FileObject.swift */; };
 		40DD737D275CB915001B85E6 /* FileListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DD737C275CB915001B85E6 /* FileListViewController.swift */; };
 		40DD737F275CBE19001B85E6 /* GDHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40DD737E275CBE19001B85E6 /* GDHelper.swift */; };
+		40E6E8F927624135007438B0 /* DownloadListCell.swift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40E6E8F827624135007438B0 /* DownloadListCell.swift.swift */; };
 		7F05E5C35C61C198E28F0C23 /* libPods-GoogleDriveExample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A4A767F750A9FED70AE292D5 /* libPods-GoogleDriveExample.a */; };
 /* End PBXBuildFile section */
 
@@ -38,6 +39,7 @@
 		40DD737A275CB8EE001B85E6 /* FileObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileObject.swift; sourceTree = "<group>"; };
 		40DD737C275CB915001B85E6 /* FileListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileListViewController.swift; sourceTree = "<group>"; };
 		40DD737E275CBE19001B85E6 /* GDHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GDHelper.swift; sourceTree = "<group>"; };
+		40E6E8F827624135007438B0 /* DownloadListCell.swift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadListCell.swift.swift; sourceTree = "<group>"; };
 		46C27F10E0341278F14A0DDA /* Pods-GoogleDriveExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoogleDriveExample.debug.xcconfig"; path = "Target Support Files/Pods-GoogleDriveExample/Pods-GoogleDriveExample.debug.xcconfig"; sourceTree = "<group>"; };
 		965348D9A490D34F3ED21FAF /* Pods-GoogleDriveExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GoogleDriveExample.release.xcconfig"; path = "Target Support Files/Pods-GoogleDriveExample/Pods-GoogleDriveExample.release.xcconfig"; sourceTree = "<group>"; };
 		A4A767F750A9FED70AE292D5 /* libPods-GoogleDriveExample.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GoogleDriveExample.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -85,6 +87,7 @@
 				40DD737A275CB8EE001B85E6 /* FileObject.swift */,
 				400B426A2759D5670068FA99 /* GTLRDataObject.data 예시 */,
 				400B425627587B360068FA99 /* Main.storyboard */,
+				40E6E8F827624135007438B0 /* DownloadListCell.swift.swift */,
 				400B425C27587B370068FA99 /* Assets.xcassets */,
 				400B425E27587B370068FA99 /* LaunchScreen.storyboard */,
 				400B426127587B370068FA99 /* Info.plist */,
@@ -240,6 +243,7 @@
 				40DD737F275CBE19001B85E6 /* GDHelper.swift in Sources */,
 				400B425127587B360068FA99 /* AppDelegate.swift in Sources */,
 				400B425B27587B360068FA99 /* GoogleDriveExample.xcdatamodeld in Sources */,
+				40E6E8F927624135007438B0 /* DownloadListCell.swift.swift in Sources */,
 				400B425327587B360068FA99 /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

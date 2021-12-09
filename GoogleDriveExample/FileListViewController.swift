@@ -21,7 +21,7 @@ class FileListViewController: UIViewController {
         super.viewDidLoad()
         
         GDHelper.shared.delegate = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "Cell")
+//        tableView.register(DownloadListCell.self, forCellReuseIdentifier: DownloadListCell.identifier)
         
         fetchFileList()
     }
@@ -79,7 +79,7 @@ class FileListViewController: UIViewController {
             }
             
             self.nextPageToken = pageToken
-            self.files.append(contentsOf: FileObject.makeFiles(fileList))
+            self.files.append(contentsOf: FileObject.makeFiles(fileList, startIndex: self.files.count))
             self.updateUI()
             self.isFetching = false
         }
@@ -87,7 +87,7 @@ class FileListViewController: UIViewController {
 }
 
 // MARK: - UI Delegate
-extension FileListViewController { // TODO: Adopt cell delegate
+extension FileListViewController: DownloadListCellDelegate { // TODO: Adopt cell delegate
     func downloadButtonTapped(_ cell: UITableViewCell) {
         if let indexPath = tableView.indexPath(for: cell) {
             let file = files[indexPath.item]
@@ -96,9 +96,9 @@ extension FileListViewController { // TODO: Adopt cell delegate
         }
     }
     
-    func makeBreadButtonTapped(_ cell: UITableViewCell) {
+    func openButtonTapped(_ cell: UITableViewCell) {
         if let indexPath = tableView.indexPath(for: cell) {
-            let file = files[indexPath.item]
+//            let file = files[indexPath.item]
             // xlsx 파일 읽는 객체가 로직을 수행함.
         }
     }
@@ -118,26 +118,37 @@ extension FileListViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-        let file = files[indexPath.item]
-                
-        var content = UIListContentConfiguration.subtitleCell()
-        content.text = file.name
-        content.textProperties.numberOfLines = 1
-        content.textProperties.lineBreakMode = .byTruncatingTail
-        
-        if file.mimeType == .folder {
-            content.image = UIImage(systemName: "folder")
-        } else {
-            content.image = UIImage(systemName: "f.square")
-            let formatter = ByteCountFormatter()
-            formatter.countStyle = .binary
-            content.secondaryText = formatter.string(fromByteCount: file.size)
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: DownloadListCell.identifier, for: indexPath) as? DownloadListCell else {
+            return UITableViewCell()
         }
         
-        cell.contentConfiguration = content
+        let file = files[indexPath.item]
+        cell.delegate = self
+        cell.configure(file, downloaded: GDHelper.shared.fileExist(file))
         return cell
     }
+    
+//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
+//        let file = files[indexPath.item]
+//
+//        var content = UIListContentConfiguration.subtitleCell()
+//        content.text = file.name
+//        content.textProperties.numberOfLines = 1
+//        content.textProperties.lineBreakMode = .byTruncatingTail
+//
+//        if file.mimeType == .folder {
+//            content.image = UIImage(systemName: "folder")
+//        } else {
+//            content.image = UIImage(systemName: "f.square")
+//            let formatter = ByteCountFormatter()
+//            formatter.countStyle = .binary
+//            content.secondaryText = formatter.string(fromByteCount: file.size)
+//        }
+//
+//        cell.contentConfiguration = content
+//        return cell
+//    }
 }
 
 extension FileListViewController: UITableViewDelegate {
@@ -150,6 +161,7 @@ extension FileListViewController: UITableViewDelegate {
             }
         } else {
             print("파일 다운로드 로직 수행해야함. 사이즈=\(file.size)")
+            GDHelper.shared.downloadFile(from: file)
         }
         
         tableView.deselectRow(at: indexPath, animated: true)

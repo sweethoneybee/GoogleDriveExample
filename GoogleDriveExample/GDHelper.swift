@@ -86,6 +86,7 @@ final class GDHelper {
             do {
                 let destinationURL = self.localPath(for: id)
                 try data.write(to: destinationURL)
+                print("다운로드 성공 후 데이터 쓰기 성공")
                 self.delegate?.didFinishDownload(fileObject, error: nil)
             } catch {
                 print("다운로드 후 데이터 쓰기 실패")
@@ -132,6 +133,11 @@ final class GDHelper {
             }
             print("")
         }
+    }
+    
+    func fileExist(_ file: FileObject) -> Bool {
+        let destinationURL = self.localPath(for: file.id)
+        return FileManager.default.fileExists(atPath: destinationURL.path)
     }
 }
 

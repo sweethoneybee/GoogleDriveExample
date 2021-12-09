@@ -16,6 +16,17 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        if UserDefaults.standard.bool(forKey: "launched") == false {
+            UserDefaults.standard.set(true, forKey: "launched")
+            let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!.appendingPathComponent("googleDrive", isDirectory: true)
+            do {
+                try FileManager.default.createDirectory(at: url, withIntermediateDirectories: false, attributes: nil)
+                print("디렉토리 생성 성공")
+            } catch {
+                print("디렉토리 생성 실패")
+            }
+        }
         return true
     }
 
