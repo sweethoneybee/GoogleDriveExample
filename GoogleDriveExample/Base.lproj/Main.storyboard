@@ -98,20 +98,38 @@
                                                     <rect key="frame" x="296.5" y="6" width="70.5" height="30"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" title="다운"/>
+                                                    <connections>
+                                                        <action selector="didDownloadButtonTapped" destination="OMq-JW-t3k" eventType="touchUpInside" id="wNp-n2-qoJ"/>
+                                                    </connections>
                                                 </button>
-                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rHX-Wl-3lO">
+                                                <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="rHX-Wl-3lO">
                                                     <rect key="frame" x="296.5" y="6" width="70.5" height="30"/>
                                                     <state key="normal" title="Button"/>
                                                     <buttonConfiguration key="configuration" style="plain" title="열기"/>
+                                                    <connections>
+                                                        <action selector="didOpenButtonTapped" destination="OMq-JW-t3k" eventType="touchUpInside" id="6Jw-Mn-1we"/>
+                                                    </connections>
+                                                </button>
+                                                <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="w0t-pI-6Ae">
+                                                    <rect key="frame" x="296.5" y="6" width="70.5" height="30"/>
+                                                    <state key="normal" title="Button"/>
+                                                    <buttonConfiguration key="configuration" style="plain" title="취소"/>
+                                                    <connections>
+                                                        <action selector="didCancelButtonTapped" destination="OMq-JW-t3k" eventType="touchUpInside" id="n6P-cl-8Ds"/>
+                                                    </connections>
                                                 </button>
                                             </subviews>
                                             <constraints>
+                                                <constraint firstItem="w0t-pI-6Ae" firstAttribute="top" secondItem="ze4-zT-9AP" secondAttribute="top" id="3Oj-j5-XAF"/>
                                                 <constraint firstAttribute="bottom" secondItem="Nsk-CK-csJ" secondAttribute="bottom" constant="4.5" id="9Pw-fk-gJn"/>
                                                 <constraint firstItem="ze4-zT-9AP" firstAttribute="leading" secondItem="ev3-Hf-wDB" secondAttribute="leading" constant="7" id="APl-Ur-j8E"/>
+                                                <constraint firstAttribute="trailing" secondItem="w0t-pI-6Ae" secondAttribute="trailing" constant="7" id="D1N-3Y-Zg6"/>
+                                                <constraint firstItem="w0t-pI-6Ae" firstAttribute="bottom" secondItem="ze4-zT-9AP" secondAttribute="bottom" id="FOb-rW-TdI"/>
                                                 <constraint firstItem="yE2-c4-7mn" firstAttribute="leading" secondItem="ze4-zT-9AP" secondAttribute="trailing" constant="8" symbolic="YES" id="IAs-SY-lNS"/>
                                                 <constraint firstItem="rHX-Wl-3lO" firstAttribute="leading" secondItem="yE2-c4-7mn" secondAttribute="trailing" constant="-9.5" id="Nll-TI-jZb"/>
                                                 <constraint firstItem="QXg-tX-flb" firstAttribute="leading" secondItem="yE2-c4-7mn" secondAttribute="trailing" constant="-9.5" id="QdC-Cc-D02"/>
                                                 <constraint firstItem="Nsk-CK-csJ" firstAttribute="top" secondItem="yE2-c4-7mn" secondAttribute="bottom" constant="-2" id="RFr-xS-TMb"/>
+                                                <constraint firstItem="w0t-pI-6Ae" firstAttribute="leading" secondItem="yE2-c4-7mn" secondAttribute="trailing" constant="-9.5" id="TJU-lK-Q2g"/>
                                                 <constraint firstItem="ze4-zT-9AP" firstAttribute="top" secondItem="ev3-Hf-wDB" secondAttribute="top" constant="6" id="Twl-OT-EZ0"/>
                                                 <constraint firstItem="Nsk-CK-csJ" firstAttribute="leading" secondItem="yE2-c4-7mn" secondAttribute="leading" id="UV5-PY-1RT"/>
                                                 <constraint firstItem="QXg-tX-flb" firstAttribute="bottom" secondItem="ze4-zT-9AP" secondAttribute="bottom" id="Waf-XI-gHY"/>
@@ -124,6 +142,7 @@
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>
+                                            <outlet property="cancelButton" destination="w0t-pI-6Ae" id="luN-KG-0Sa"/>
                                             <outlet property="downloadButton" destination="QXg-tX-flb" id="Gzp-l4-Afi"/>
                                             <outlet property="iconView" destination="ze4-zT-9AP" id="6Ui-VH-SfQ"/>
                                             <outlet property="openButton" destination="rHX-Wl-3lO" id="E63-9X-GtC"/>

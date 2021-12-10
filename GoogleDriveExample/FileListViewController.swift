@@ -25,7 +25,14 @@ class FileListViewController: UIViewController {
         
         fetchFileList()
     }
-
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if isFetching {
+            GDHelper.shared.stopFetchingFileList()
+        }
+    }
+    
     func updateUI() {
         tableView.reloadData()
     }
@@ -91,7 +98,8 @@ extension FileListViewController: DownloadListCellDelegate { // TODO: Adopt cell
     func downloadButtonTapped(_ cell: UITableViewCell) {
         if let indexPath = tableView.indexPath(for: cell) {
             let file = files[indexPath.item]
-            GDHelper.shared.downloadFile(from: file)
+//            GDHelper.shared.downloadFile(from: file)
+            GDHelper.shared.fetch(from: file)
             reload(indexPath.item)
         }
     }
@@ -106,7 +114,7 @@ extension FileListViewController: DownloadListCellDelegate { // TODO: Adopt cell
     func cancelButtonTapped(_ cell: UITableViewCell) {
         if let indexPath = tableView.indexPath(for: cell) {
             let file = files[indexPath.item]
-            GDHelper.shared.cancelDownload(for: file.id)
+            GDHelper.shared.stopFetching(for: file.id)
             reload(indexPath.item)
         }
     }
@@ -123,32 +131,11 @@ extension FileListViewController: UITableViewDataSource {
         }
         
         let file = files[indexPath.item]
+        let fetcher = GDHelper.shared.activeFetchers[file.id]
         cell.delegate = self
-        cell.configure(file, downloaded: GDHelper.shared.fileExist(file))
+        cell.configure(file, downloaded: GDHelper.shared.fileExist(file), fetcher: fetcher)
         return cell
     }
-    
-//    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-//        let file = files[indexPath.item]
-//
-//        var content = UIListContentConfiguration.subtitleCell()
-//        content.text = file.name
-//        content.textProperties.numberOfLines = 1
-//        content.textProperties.lineBreakMode = .byTruncatingTail
-//
-//        if file.mimeType == .folder {
-//            content.image = UIImage(systemName: "folder")
-//        } else {
-//            content.image = UIImage(systemName: "f.square")
-//            let formatter = ByteCountFormatter()
-//            formatter.countStyle = .binary
-//            content.secondaryText = formatter.string(fromByteCount: file.size)
-//        }
-//
-//        cell.contentConfiguration = content
-//        return cell
-//    }
 }
 
 extension FileListViewController: UITableViewDelegate {
@@ -161,7 +148,6 @@ extension FileListViewController: UITableViewDelegate {
             }
         } else {
             print("파일 다운로드 로직 수행해야함. 사이즈=\(file.size)")
-            GDHelper.shared.downloadFile(from: file)
         }
         
         tableView.deselectRow(at: indexPath, animated: true)
@@ -187,5 +173,10 @@ extension FileListViewController: GDHelperDownloadDelegate {
             }
             reload(fileObject.index)
         }
+    }
+    
+    func downloadProgress(_ fileObject: FileObject, totalBytesWritten: Int64) {
+        print("총 다운로드해야하는 크기=\(fileObject.size)")
+        print("현재 다운로드 된 크기=\(totalBytesWritten)")
     }
 }

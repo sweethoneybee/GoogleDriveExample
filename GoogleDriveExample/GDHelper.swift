@@ -9,7 +9,8 @@ import Foundation
 import CoreXLSX
 
 protocol GDHelperDownloadDelegate: AnyObject {
-    func didFinishDownload(_ fileObject:FileObject, error: Error?)
+    func didFinishDownload(_ fileObject: FileObject, error: Error?)
+    func downloadProgress(_ fileObject: FileObject, totalBytesWritten: Int64)
 }
 
 final class GDHelper {
@@ -20,10 +21,11 @@ final class GDHelper {
 
     static let shared = GDHelper()
     weak var delegate: GDHelperDownloadDelegate?
+    weak var fileListTicket: GTLRServiceTicket?
     
-    var activeDownloads: [String: GTLRServiceTicket] = [:] // [GTLRDrive_File.id : GTLRServiceTicket
+    var activeDownloads: [String: GTLRServiceTicket] = [:] // [GTLRDrive_File.id : GTLRServiceTicket]
+    var activeFetchers: [String: GTMSessionFetcher] = [:] // [GTLRDrive_File.id: GTMSessionFetcher]
     var service: GTLRDriveService
-    var fileListTicket: GTLRServiceTicket?
     
     var authorizer: GTMFetcherAuthorizationProtocol? {
         get {
@@ -47,7 +49,7 @@ final class GDHelper {
         let query = GTLRDriveQuery_FilesList.query()
         query.fields = "nextPageToken,files(mimeType,id,name,size)"
         query.q = "(mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' or mimeType = 'application/vnd.google-apps.folder' or mimeType = 'application/pdf') and '\(root ?? "root")' in parents and trashed = false"
-        query.pageSize = 10
+        query.pageSize = 50
         query.pageToken = nextPageToken
         query.orderBy = "folder, name"
         
@@ -63,9 +65,9 @@ final class GDHelper {
         }
     }
     
-    func downloadFile(from fileObject: FileObject) {
-        guard activeDownloads[fileObject.id] == nil else { return }
-        let id = fileObject.id
+    func downloadFile(from file: FileObject) {
+        guard activeDownloads[file.id] == nil else { return }
+        let id = file.id
         let query = GTLRDriveQuery_FilesGet.queryForMedia(withFileId: id)
         
         activeDownloads[id] = service.executeQuery(query) { ticket, object, error in
@@ -75,7 +77,7 @@ final class GDHelper {
             
             if let error = error {
                 print("다운로드에러=\(error)")
-                self.delegate?.didFinishDownload(fileObject, error: error)
+                self.delegate?.didFinishDownload(file, error: error)
                 return
             }
             
@@ -87,11 +89,41 @@ final class GDHelper {
                 let destinationURL = self.localPath(for: id)
                 try data.write(to: destinationURL)
                 print("다운로드 성공 후 데이터 쓰기 성공")
-                self.delegate?.didFinishDownload(fileObject, error: nil)
+                self.delegate?.didFinishDownload(file, error: nil)
             } catch {
                 print("다운로드 후 데이터 쓰기 실패")
-                self.delegate?.didFinishDownload(fileObject, error: error)
+                self.delegate?.didFinishDownload(file, error: error)
             }
+        }
+    }
+    
+    func fetch(from file: FileObject) {
+        guard activeFetchers[file.id] == nil else { return }
+        let id = file.id
+        let query = GTLRDriveQuery_FilesGet.queryForMedia(withFileId: id)
+        
+        let downloadRequest = service.request(for: query)
+        let fetcher = service.fetcherService.fetcher(with: downloadRequest as URLRequest)
+        fetcher.downloadProgressBlock = { byteWritten, totalBytesWritten, totalBytesExpectedToWrite in
+            self.delegate?.downloadProgress(file, totalBytesWritten: totalBytesWritten)
+        }
+        fetcher.destinationFileURL = self.localPath(for: file.id)
+
+        activeFetchers[file.id] = fetcher
+        fetcher.beginFetch { data, error in
+            defer {
+                self.activeFetchers.removeValue(forKey: file.id)
+            }
+            
+            if let error = error {
+                print("빅다운로드에러=\(error)")
+                self.delegate?.didFinishDownload(file, error: error)
+                return
+            }
+
+            // data will be nil
+            print("빅다운로드 성공")
+            self.delegate?.didFinishDownload(file, error: nil)
         }
     }
     
@@ -99,6 +131,20 @@ final class GDHelper {
         if let ticket = activeDownloads[id] {
             ticket.cancel()
             activeDownloads.removeValue(forKey: id)
+        }
+    }
+    
+    func stopFetching(for id: String) {
+        if let fetcher = activeFetchers[id] {
+            fetcher.stopFetching()
+            activeFetchers.removeValue(forKey: id)
+        }
+    }
+    
+    func stopFetchingFileList() {
+        if let fileListTicket = fileListTicket {
+            fileListTicket.cancel()
+            print("리스트 다운로드 취소 성공")
         }
     }
     
@@ -140,22 +186,3 @@ final class GDHelper {
         return FileManager.default.fileExists(atPath: destinationURL.path)
     }
 }
-
-
-
-// 파일이 큰 경우, 아래와 같은 방식으로 다운로드 프로그레스를 관찰할 수 있음
-//        let downloadRequest = service.request(for: query)
-//        let fetcher = service.fetcherService.fetcher(with: downloadRequest as URLRequest)
-//        fetcher.destinationFileURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("testest")
-//        fetcher.beginFetch { data, error in
-//            if let error = error {
-//                print("다운로드에러=\(error)")
-//                return
-//            }
-//
-//            guard let data = data else {
-//                return
-//            }
-//            print("다운로드 성공")
-//            print(data)
-//        }
